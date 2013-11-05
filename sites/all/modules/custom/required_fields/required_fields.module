@@ -1,0 +1,85 @@
+<?php
+
+function required_fields_menu() {
+  $item = array();
+  $item['admin/config/content/required_fields'] = array(
+    'title' => 'Required Fields',
+    'description' => 'Make the fields as required',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('required_fields_configuration'),
+    'access arguments' => array('administer')
+  );
+  $item['admin/content/required_fields/field/update'] = array(
+    'title' => 'Updating the field',
+    'description' => 'Update the field',
+    'page callback' => 'required_fields_ajax_callback',
+    'access arguments' => array('administer')
+  );
+  return $item;
+}
+
+function required_fields_configuration($form, $form_state) {
+
+  $header = array(
+   'Fields' => 'Fields',
+   'Content Type' => 'Content Type',
+   'action' => ''
+);
+
+  $fields = array_keys(field_info_fields());
+
+  $content_types = array_keys(node_type_get_types());
+  array_unshift($content_types, 'All'); 
+  $types = array_combine($content_types, $content_types); 
+  
+  foreach ($fields as $key => $field) {
+    foreach ($types as $keytype => $type) {
+    $options[$type] = array(
+      'Fields' => array(
+        'data' => array(
+          '#markup' => $field,
+          '#prefix' => '<div class="field">',
+          '#suffix' => '</div>',
+          '#attributes' => array('class' => array('field')),
+        ),
+      ),
+      'Content Type' => array(
+        'data' => array(
+          '#markup' => $type,
+          '#prefix' => '<div class="type">',
+          '#suffix' => '</div>',
+          '#attributes' => array('class' => array('type')),
+        ),
+      ),
+      'action' => array(
+         'data' => array(
+           '#type' => 'button',
+           '#value' => 'Mark',
+           '#attributes' => array('class' => array('mark'))
+         ),
+      ),
+    );
+    }
+  }
+  $form['nodes'] = array(
+    '#type' => 'tableselect',
+    '#header' => $header,
+    '#options' => $options,
+    '#multiple' => TRUE,
+    '#empty' => t('No content available.'),
+  );
+
+  return $form;
+}
+
+function required_fields_ajax_callback() {
+  echo 'test'; exit;
+}
+
+function required_fields_configuration_validate($form, &$form_state) {
+}
+
+function required_fields_configuration_submit($form, &$form_state) {
+  print_r($form_state['values']); exit;
+}
+

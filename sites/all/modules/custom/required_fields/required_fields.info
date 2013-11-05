@@ -1,0 +1,13 @@
+name = Required Fields
+description = Required fields configuration
+core = 7.x
+
+scripts[] = js/required_fields.js
+
+configure = admin/config/content/required_fields
+
+version = "7.x-1.8"
+core = "7.x"
+project = "required_fields"
+package = Fields
+
