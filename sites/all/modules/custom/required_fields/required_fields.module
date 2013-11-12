@@ -29,51 +29,68 @@ function required_fields_configuration($form, $form_state) {
   $fields = array_keys(field_info_fields());
 
   $content_types = array_keys(node_type_get_types());
-  array_unshift($content_types, 'All'); 
-  $types = array_combine($content_types, $content_types); 
-  
+  array_unshift($content_types, 'All');
+  $ctypes = array_combine($content_types, $content_types);
+  $i = 0;
+  $changed_value = '';
+  $changed_key = '';
+  if (isset($form_state['values'])) {
+    $changed_value = current($form_state['values']);
+    $changed_key = key($form_state['values']);
+  }
   foreach ($fields as $key => $field) {
-    foreach ($types as $keytype => $type) {
-    $options[$type] = array(
-      'Fields' => array(
-        'data' => array(
-          '#markup' => $field,
-          '#prefix' => '<div class="field">',
-          '#suffix' => '</div>',
-          '#attributes' => array('class' => array('field')),
-        ),
-      ),
-      'Content Type' => array(
-        'data' => array(
-          '#markup' => $type,
-          '#prefix' => '<div class="type">',
-          '#suffix' => '</div>',
-          '#attributes' => array('class' => array('type')),
-        ),
-      ),
-      'action' => array(
-         'data' => array(
-           '#type' => 'button',
-           '#value' => 'Mark',
-           '#attributes' => array('class' => array('mark'))
-         ),
-      ),
+    $form[$field] = array(
+      '#type' => 'fieldset',
+      '#title' => $field,
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE
     );
+    $i++;
+    foreach ($ctypes as $keytype => $valuetype) {
+      $form[$field]['type_' . $i . '_' . $keytype] = array(
+        '#markup' => $valuetype,
+        '#attributes' => array('class' => array('type')),
+      );
+      if ($changed_key == 'action_' . $i . '_' . $keytype) {
+        $changed_value = $changed_value=='Mark'?'Unmark':'Mark';
+      }
+      else $changed_value = 'Mark';
+      //echo $changed_value;
+      $form[$field]['action_' . $i . '_' . $keytype] = array(
+        '#type' => 'button',
+        '#name' => 'action_' . $i . '_' . $keytype,
+        '#limit_validation_errors' => array(),
+        '#executes_submit_callback' => FALSE,
+        '#value' => 'Mark',
+        '#attributes' => array('class' => array('mark')),
+        '#prefix' => '<div id="markbutton_' . $i . '_' . $keytype . '">',
+        '#suffix' => '</div>',
+        '#ajax' => array(
+          'callback' => 'required_fields_ajax_callback',
+          'wrapper' => 'markbutton_' . $i . '_' . $keytype,
+          'method' => 'replace',
+          'effect' => 'fade',
+          'attributes' => array('field' => $field, 'ctype' => $valuetype, 'parent' => 'action_' . $i . '_' . $keytype, 'value' => 'Mark'),
+        ),
+      );
     }
   }
-  $form['nodes'] = array(
-    '#type' => 'tableselect',
-    '#header' => $header,
-    '#options' => $options,
-    '#multiple' => TRUE,
-    '#empty' => t('No content available.'),
-  );
-
   return $form;
 }
 
-function required_fields_ajax_callback() {
-  echo 'test'; exit;
+function required_fields_ajax_callback($form, &$form_state) {
+  $field = $form_state['triggering_element']['#ajax']['attributes']['parent'];
+  $fieldset = $form_state['triggering_element']['#ajax']['attributes']['field'];
+  //$form[$fieldset][$field]['#value'] = $form[$fieldset][$field]['#value']=='Mark'?'Unmark':'Mark';
+  print_r($form_state['input']);
+  if ($form[$fieldset][$field]['#value'] == 'Mark') {
+    //echo $form[$fieldset][$field]['#value']; exit;
+    $form[$fieldset][$field]['#ajax']['attributes']['value'] = $form[$fieldset][$field]['#value'] = 'Unmark';
+  } else {
+    //echo $form[$fieldset][$field]['#value']; exit;
+    $form[$fieldset][$field]['#ajax']['attributes']['value'] = $form[$fieldset][$field]['#value'] = 'Mark';
+  }
+  return $form[$fieldset][$field];
 }
 
 function required_fields_configuration_validate($form, &$form_state) {
