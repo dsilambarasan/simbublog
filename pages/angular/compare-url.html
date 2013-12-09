@@ -1,0 +1,42 @@
+<div class="input-site-status">
+  <!-- Form for checking a site's status. Submit handler handled by SiteStatusCtrl -->
+  <form ng-submit="check(siteStatus)" name="siteStatus" class="site-status" novalidate>
+    <!-- Error Handling, add to DOM if the URL Input is invalid -->
+    <div class="message error" ng-if="siteStatus.$error.url">\{{ 'SITE-STATUS_LABEL_INVALID_URL' | translate | titleize }}</div>
+    <!-- URL Input -->
+    <label for='siteStatus.url'>\{{ 'SITE-STATUS_INPUT_URL' | translate }}</label>
+    <input id='siteStatus.url' ng-required='true' type="text" ng-model="siteStatus.url" />
+    <input id='siteStatus.compareUrl' ng-required='true' type="text" ng-model="siteStatus.compareUrl" />
+    <!-- Submit Button, disabled if the form is invalid -->
+    <input type="submit" ng-hide="newIssue" class="check-status" value="Compare" ng-disabled="siteStatus.$invalid" />
+  </form>
+
+  <div ng-if="loader" class="throbber"></div>
+  <div ng-repeat='(testName, test) in testResults'>
+    <div ng-if="test.statusImage" class="\{{test.loadingStatus}}" data-message="\{{test.statusMessage}}">
+      <fieldset>
+        <legend>\{{test.description}}</legend>
+        <img src="data:image/png;base64,\{{test.statusImage}}" alt="\{{test.description}}">
+        <dl class='phantom_results'>
+          <dt ng-if='test.description' class='server_id'>Source Server</dt>
+          <dd ng-if='test.description' class='server_id'>\{{test.description}}</dd>
+          <dt ng-if='test.responseCode' class='http_code'>HTTP Response Code</dt>
+          <dd ng-if='test.responseCode' class='http_code'>\{{test.responseCode}}</dd>
+          <dt ng-if='test.pageTitle' class='page_title'>PageTitle</dt>
+          <dd ng-if='test.pageTitle' class='page_title'>\{{test.pageTitle}}</dd>
+          <dt ng-if='test.responseStatus' class='site_statusstring'>Site Status</dt>
+          <dd ng-if='test.responseStatus' class='site_statusstring'>\{{test.responseStatus}}</dd>
+          <dt ng-if='test.responseTime' class='load_time'>Page Loading Time</dt>
+          <dd ng-if='test.responseTime' class='load_time'>\{{test.responseTime}}ms</dd>
+          <dt ng-if='test.timestamp' class='response_timestamp'>Results Timestamp</dt>
+          <dd ng-if='test.timestamp' class='response_timestamp'>\{{test.timestamp}}</dd>
+        </dl>
+      </fieldset>
+    </div>
+  </div>
+
+  <input type="submit" ng-hide="!showOutage" class="check-status" value="Submit Outage" ng-click="createTicket('outage')" />
+  <input type="submit" ng-hide="!showIssue" class="check-status" value="Submit Issue" ng-click="createTicket('problem')" />
+  <input type="submit" ng-hide="!addComment" class="check-status" value="Add as comment" ng-click="addToComment()" />
+
+</div>
